@@ -1,0 +1,12 @@
+{
+  "name": "codeqr",
+  "description": "CodeQR plugin for creating short links, QR codes, tracking analytics, and managing domains. Integrates the CodeQR API directly into your AI workflow.",
+  "version": "0.1.0",
+  "author": {
+    "name": "CodeQR",
+    "email": "support@codeqr.io"
+  },
+  "homepage": "https://codeqr.io",
+  "repository": "https://github.com/codeqr-io/codeqr-plugin",
+  "license": "MIT"
+}

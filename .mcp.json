@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "codeqr": {
+      "command": "npx",
+      "args": ["-y", "@codeqr/ts-mcp@latest"],
+      "env": {
+        "CODEQR_API_KEY": ""
+      }
+    }
+  }
+}
