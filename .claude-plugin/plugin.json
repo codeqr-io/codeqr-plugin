@@ -12,5 +12,6 @@
   "privacyPolicyUrl": "https://codeqr.io/en/privacy",
   "repository": "https://github.com/codeqr-io/codeqr-plugin",
   "license": "MIT",
+  "icon": "assets/icon.png",
   "keywords": ["qr code", "dynamic qr code", "short links", "link analytics", "a/b testing"]
 }
