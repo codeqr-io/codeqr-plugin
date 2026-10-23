@@ -1,70 +1,24 @@
 ---
 name: create-link
-description: Create shortened links with CodeQR. Use when the user wants to shorten a URL, create a branded short link, set up link redirects, or generate trackable links with custom slugs, tags, and expiration dates.
+description: Create a CodeQR short link. Use when the person wants to shorten a URL, make a branded or trackable link, set a custom slug, domain, expiry date or password, give a link its own social preview, or turn on conversion tracking for a link.
 ---
 
-# Create Short Link
+# Create a short link
 
-You have access to the CodeQR MCP server. Use the `execute` tool to create short links.
+Use the CodeQR connector's `create_link` tool.
 
-## How to create a link
+1. Get the real destination. If the person has not given the address the link should open, ask for it. Never invent one or use a placeholder such as example.com: CodeQR refuses those and nothing is created.
+2. Fill in only what the person asked for:
+   - `key`: a custom slug, such as `spring-menu`. Left out, CodeQR generates one.
+   - `domain`: one of the workspace's custom domains. Call `list_domains` when they name a domain or ask which ones they have. Left out, the workspace's default short domain is used.
+   - `tagIds`: IDs from `list_tags`. If the tag does not exist yet, create it with `create_tag` first.
+   - `expiresAt` (ISO 8601), `password`, `comments` (internal notes) and `externalId` (their own reference for the link).
+   - Social preview: `proxy: true` together with `title`, `description` and `image` in the same call. `proxy` on its own renders an empty preview card.
+   - `trackConversion: true` when they want leads and sales attributed to the link. It appends a `cq_id` parameter to the destination, and it is only available on plans with conversion tracking: on other plans the whole call is refused.
+   - `rules`, to send visitors to different pages by device, country or language, or to split traffic for an A/B test: follow the `smart-rules` skill.
+3. Reply with the short link, where it leads and its ID. Mention that the destination can be changed later and the link keeps working. Do not paste the full API response.
 
-Call the `execute` tool with a `run(client)` function. The client is a pre-authenticated `@codeqr/ts` SDK instance.
+## When the call is refused
 
-### Basic link creation
-
-```typescript
-async function run(client) {
-  const link = await client.links.create({
-    url: "https://example.com/my-long-url",
-  });
-  console.log("Short link:", link.shortLink);
-  console.log("Link ID:", link.id);
-  return link;
-}
-```
-
-### Advanced link creation with all options
-
-```typescript
-async function run(client) {
-  const link = await client.links.create({
-    url: "https://example.com/landing-page",
-    domain: "link.example.com",    // Custom domain (optional)
-    key: "my-campaign",            // Custom slug (optional, auto-generated if omitted)
-    externalId: "campaign-123",    // Your internal reference ID (optional)
-    tagIds: ["tag_abc123"],        // Associate with tags (optional)
-    comments: "Q1 marketing campaign link", // Internal notes (optional)
-    expiresAt: "2026-12-31T23:59:59Z",     // Expiration date (optional)
-    expiredUrl: "https://example.com/expired", // Redirect when expired (optional)
-    password: "secret123",         // Password-protect the link (optional)
-    archived: false,               // Archive status (optional)
-    title: "My Campaign Link",    // Custom title for previews (optional)
-    description: "Landing page for Q1 campaign", // Custom description (optional)
-  });
-  console.log("Short link:", link.shortLink);
-  return link;
-}
-```
-
-### Bulk link creation
-
-```typescript
-async function run(client) {
-  const links = await client.links.bulk.create([
-    { url: "https://example.com/page1" },
-    { url: "https://example.com/page2" },
-    { url: "https://example.com/page3" },
-  ]);
-  links.forEach(link => console.log(link.shortLink));
-  return links;
-}
-```
-
-## Important notes
-
-- If no `domain` is specified, CodeQR uses the workspace default domain
-- If no `key` (slug) is specified, one is auto-generated
-- The `shortLink` field in the response contains the full shortened URL
-- Use `tagIds` to organize links into categories for better analytics
-- Use `externalId` to map links to your own system's identifiers
+- A limit of the workspace comes back as a sentence with a details link. Relay it plainly and offer the version of the request that fits, such as the same link without `trackConversion` or `rules`.
+- A placeholder refusal means you still need the real address from the person.
