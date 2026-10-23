@@ -1,77 +1,25 @@
 ---
 name: manage-links
-description: Manage existing CodeQR short links. Use when the user wants to list, update, delete, or look up information about their short links.
+description: Find, change, archive or delete existing CodeQR short links and QR codes. Use when the person wants to see their links or QR codes, look one up, change where a printed QR code or a shared link leads, change a slug or an expiry date, archive one, or delete one.
 ---
 
-# Manage Links
+# Manage links and QR codes
 
-You have access to the CodeQR MCP server. Use the `execute` tool to manage links.
+## Find
 
-## List all links
+- `list_links` and `list_qrcodes` return the newest first, 20 per page unless `pageSize` asks for more (up to 100). Use `page` for the next page; when a reply says the page is full, there may be more. `list_links` also filters by `search`, `domain` and `tagId`.
+- `get_link_info` looks up one link by `linkId`, by `externalId`, or by `domain` and `key` (for `codeqr.link/menu`: domain `codeqr.link`, key `menu`).
 
-```typescript
-async function run(client) {
-  const links = await client.links.list({
-    // All parameters are optional
-    // search: "campaign",       // Search by keyword
-    // domain: "link.example.com", // Filter by domain
-    // tagId: "tag_abc123",     // Filter by tag
-    // sort: "createdAt",       // Sort field
-    // page: 1,                 // Pagination
-  });
-  links.forEach(link => {
-    console.log(`${link.shortLink} -> ${link.url} (${link.clicks} clicks)`);
-  });
-  return links;
-}
-```
+## Change where it leads
 
-## Get link info
+- Link: `update_link` with the `linkId` and the new `url`. Every copy already shared keeps working and now leads to the new address. Changing `key` rewrites the link itself and breaks every copy in circulation, so do it only when the person asks for that.
+- Dynamic QR code: `update_qrcode` with the `qrcodeId` and the payload field of the type the code already has: `url` for a link code, `wifi` for a Wi-Fi code, and so on. A code cannot change type; check with `list_qrcodes` if unsure. Printed copies open the new content from then on.
+- Static QR code: the content is in the printed pattern, so printed copies will never change. Say so before updating, and offer a new dynamic code instead.
+- Other fields: on links, `expiresAt`, `comments`, `trackConversion`, the social preview (`proxy` with `title`, `description` and `image`) and `rules` (see the `smart-rules` skill); on QR codes, `fgColor`, `bgColor`, `title` and `walletPass`.
 
-```typescript
-async function run(client) {
-  const link = await client.links.retrieveInfo({
-    linkId: "link_abc123",
-    // Or by domain + key:
-    // domain: "link.example.com",
-    // key: "my-slug",
-    // Or by externalId:
-    // externalId: "my-external-id",
-  });
-  console.log("Link details:", JSON.stringify(link, null, 2));
-  return link;
-}
-```
+Before any change, tell the person what will change and where it shows, such as on printed material. The new destination must be a real address they gave.
 
-## Update a link
+## Archive or delete
 
-```typescript
-async function run(client) {
-  const updated = await client.links.update("link_abc123", {
-    url: "https://example.com/new-destination",  // Change destination
-    // key: "new-slug",          // Change slug
-    // archived: true,           // Archive the link
-    // expiresAt: "2026-12-31",  // Set expiration
-    // password: "newpass",      // Add/change password
-    // comments: "Updated for Q2", // Update comments
-  });
-  console.log("Updated:", updated.shortLink, "->", updated.url);
-  return updated;
-}
-```
-
-## Delete a link
-
-```typescript
-async function run(client) {
-  const result = await client.links.delete("link_abc123");
-  console.log("Deleted:", result);
-  return result;
-}
-```
-
-## Tips
-
-- Use `retrieveInfo` with `externalId` to find links by your own system's ID
-- Use `search` parameter in `list()` to find links by keyword
-- Archiving a link (`archived: true`) preserves it but stops tracking
+- `archived: true` on either update tool hides the item from the default lists. It keeps working.
+- `delete_link` and `delete_qrcode` cannot be undone: a deleted link stops resolving, and a printed QR code stops working for good. Before deleting, name what will stop working and wait for a clear yes.

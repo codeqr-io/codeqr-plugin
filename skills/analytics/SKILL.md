@@ -1,107 +1,32 @@
 ---
 name: analytics
-description: Query CodeQR analytics data. Use when the user wants to check link clicks, view traffic statistics, see geographic data, analyze device types, or get performance metrics for their short links and QR codes.
+description: Read CodeQR scan and click analytics. Use when the person asks how many times a QR code was scanned or a link was clicked, where the traffic came from (country, city, device, browser, operating system, referrer), how it changed over time, which links or QR codes perform best, or how many leads and sales a link produced.
 ---
 
-# CodeQR Analytics
+# Analytics
 
-You have access to the CodeQR MCP server. Use the `execute` tool to query analytics.
+Use the CodeQR connector's `get_analytics` tool. `event` and `groupBy` are required.
 
-## How to retrieve analytics
+## Event
 
-Call the `execute` tool with a `run(client)` function.
+- `scans` for QR codes, `clicks` for short links.
+- `leads` and `sales` for links with conversion tracking on. The connector reads these counts but cannot record a lead or a sale; the person's own site or backend sends those to CodeQR.
+- `composite` for clicks, leads and sales together.
 
-### Get overall analytics
+## Scope
 
-```typescript
-async function run(client) {
-  const analytics = await client.analytics.retrieve({
-    event: "clicks",           // Event type: "clicks" or "leads" or "sales"
-    groupBy: "count",          // How to group: "count", "timeseries", "countries", "cities", "devices", "browsers", "os", "referers", "top_links", "top_urls", "trigger"
-  });
-  console.log("Analytics:", JSON.stringify(analytics, null, 2));
-  return analytics;
-}
-```
+- One QR code: `qrcodeId`, from `list_qrcodes`.
+- One link: `linkId`, from `list_links`, or `domain` and `key` for a short link the person pastes. For `codeqr.link/menu`, the domain is `codeqr.link` and the key is `menu`.
+- Neither: the whole workspace.
 
-### Analytics by country
+## Grouping
 
-```typescript
-async function run(client) {
-  const analytics = await client.analytics.retrieve({
-    event: "clicks",
-    groupBy: "countries",
-  });
-  console.log("Clicks by country:", JSON.stringify(analytics, null, 2));
-  return analytics;
-}
-```
+`count` for a total, `timeseries` for a trend, `countries`, `cities`, `devices`, `browsers`, `os` and `referers` for where the traffic came from, and `top_links`, `top_qrcodes` and `top_urls` for what performed best.
 
-### Analytics for a specific link
+## Period
 
-```typescript
-async function run(client) {
-  const analytics = await client.analytics.retrieve({
-    event: "clicks",
-    groupBy: "timeseries",
-    linkId: "link_abc123",       // Filter by specific link ID
-    interval: "24h",             // Time interval: "24h", "7d", "30d", "90d", etc.
-  });
-  console.log("Click timeseries:", JSON.stringify(analytics, null, 2));
-  return analytics;
-}
-```
+`interval` is `1h`, `24h` (the default), `7d`, `30d`, `90d`, `ytd`, `1y` or `all`. Long windows are not available on every workspace and come back as an error instead of data. When that happens, ask again with a shorter interval and say which period the answer covers.
 
-### Analytics by device and browser
+## Reply
 
-```typescript
-async function run(client) {
-  // Device analytics
-  const devices = await client.analytics.retrieve({
-    event: "clicks",
-    groupBy: "devices",
-  });
-  console.log("By device:", JSON.stringify(devices, null, 2));
-
-  // Browser analytics
-  const browsers = await client.analytics.retrieve({
-    event: "clicks",
-    groupBy: "browsers",
-  });
-  console.log("By browser:", JSON.stringify(browsers, null, 2));
-
-  return { devices, browsers };
-}
-```
-
-### Get recent events
-
-```typescript
-async function run(client) {
-  const events = await client.events.list({
-    interval: "7d",              // Time range
-  });
-  console.log("Recent events:", JSON.stringify(events, null, 2));
-  return events;
-}
-```
-
-## Available groupBy options
-
-- `count` — Total count of events
-- `timeseries` — Events over time
-- `countries` — Breakdown by country
-- `cities` — Breakdown by city
-- `devices` — Breakdown by device type (desktop, mobile, tablet)
-- `browsers` — Breakdown by browser
-- `os` — Breakdown by operating system
-- `referers` — Breakdown by referrer source
-- `top_links` — Top performing links
-- `top_urls` — Top destination URLs
-- `trigger` — Breakdown by trigger type
-
-## Tips
-
-- Use `interval` to control the time range (24h, 7d, 30d, 90d, all)
-- Filter by `linkId`, `domain`, `tagId`, or `country` for granular analysis
-- Combine with `timeseries` groupBy and `interval` for trend analysis
+Answer the question that was asked, with the number and the period it covers. For a breakdown, give the top few rows. Do not paste raw JSON. When the connector shows an analytics card, keep the text short.
