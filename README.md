@@ -1,108 +1,62 @@
-# CodeQR Plugin
+# CodeQR - Link and QR Analytics
 
-Official [CodeQR](https://codeqr.io) plugin for Claude Code and AI agents. Create short links, generate QR codes, track analytics, and manage domains directly from your AI workflow.
+Create dynamic QR codes and branded short links from a conversation with Claude, change where they lead after they are printed or shared, and read their scan and click analytics.
 
-## Installation
+The plugin connects Claude to [CodeQR](https://codeqr.io)'s hosted MCP server and adds skills that tell Claude how to use it well: which fields each kind of QR code needs, when a code should be static, how smart rules and A/B splits are written, and what an update or a delete does to codes already in circulation.
 
-### Claude Code
+## What you can ask for
 
-```bash
-claude plugin install codeqr
-```
-
-Or install from the repository directly:
-
-```bash
-claude plugin install --from https://github.com/codeqr-io/codeqr-plugin
-```
-
-### Manual Setup
-
-1. Clone this repository
-2. Set your API key: `export CODEQR_API_KEY=your_key_here`
-3. Load the plugin: `claude --plugin-dir ./codeqr-plugin`
-
-## Setup
-
-You need a CodeQR API key. Get one at [app.codeqr.io/settings/tokens](https://app.codeqr.io/settings/tokens).
-
-Set it as an environment variable:
-
-```bash
-export CODEQR_API_KEY=your_api_key_here
-```
-
-## Usage
-
-### Slash Command
-
-```
-/codeqr shorten https://example.com/my-long-url
-/codeqr create qr code for https://example.com
-/codeqr show analytics for last 7 days
-```
-
-### Natural Language (via Skills)
-
-The plugin's skills are automatically triggered by context. Just ask Claude naturally:
-
-- "Shorten this URL: https://example.com/very-long-path"
-- "Create a QR code for my website"
-- "How many clicks did my links get this week?"
-- "List all my short links"
-- "Add a custom domain link.mysite.com"
+- "Make a QR code for our menu at https://… that I can change later without reprinting."
+- "Create a Wi-Fi QR code for the shop: network Shop-Guest, password …, WPA2."
+- "Shorten https://… as go.mybrand.com/spring with a custom social preview."
+- "Send iPhone visitors of this link to the App Store and Android visitors to Google Play."
+- "Split traffic on this link 50/50 between these two landing pages, then tell me which one wins."
+- "How many times were my QR codes scanned in the last 30 days, and from which cities?"
+- "Change the QR code on our flyers so it opens the new booking page."
 
 ## Skills
 
-| Skill | Description |
-|-------|-------------|
-| `create-link` | Create shortened links with custom slugs, domains, tags, and expiration |
-| `create-qrcode` | Generate QR codes with custom colors and sizes |
-| `analytics` | Query click analytics by country, device, browser, referrer, and more |
-| `manage-links` | List, update, delete, and search existing links |
-| `manage-domains` | Add, configure, and manage custom domains |
-| `manage-tags` | Create and organize tags for link categorization |
-| `track-conversions` | Track leads and sales attributed to your links |
+| Skill | What it covers |
+|---|---|
+| `create-link` | Short links with a custom slug or domain, tags, expiry, password, social preview and conversion tracking |
+| `create-qrcode` | QR codes for URLs, Wi-Fi, contact cards, WhatsApp, email, SMS, phone numbers, text and crypto payment requests; dynamic or static |
+| `smart-rules` | Routing by device, country, city, region, continent, language, referrer or UTM, A/B splits, results per variant, ending a test |
+| `analytics` | Scans, clicks, leads and sales over time and by country, city, device, browser, operating system, referrer and top performers |
+| `manage-links` | Finding, changing, archiving and deleting links and QR codes |
+| `organize-workspace` | The connected workspace and plan, custom domains and tags |
 
-## MCP Server
+In Claude Code and Cowork, `/codeqr:codeqr <request>` routes a request to the right skill.
 
-This plugin bundles the [`@codeqr/ts-mcp`](https://www.npmjs.com/package/@codeqr/ts-mcp) server, which provides two MCP tools:
+## Connect your CodeQR account
 
-- **`execute`** — Run TypeScript code against the CodeQR API with a pre-authenticated client
-- **`search_docs`** — Search SDK documentation for methods, parameters, and examples
+The plugin uses CodeQR's MCP server at `https://mcp.codeqr.io/mcp`, the same server as the CodeQR connector in the Claude directory. There is no API key to create or paste. The first time Claude uses a CodeQR tool, you sign in to CodeQR in your browser, choose the workspace Claude may use, and approve. In claude.ai and Cowork, connect it from the plugin's **Connectors** tab; in Claude Code, run `/mcp` to start the sign-in.
 
-## Cross-Platform Compatibility
+You need a CodeQR account; the free plan works. Smart rules, conversion tracking, long analytics windows and custom wallet pass branding depend on your plan, and Claude tells you when a request goes beyond it.
 
-The skills in this plugin follow the [Agent Skills](https://agentskills.io) open standard and are compatible with:
+To revoke access, remove the integration under **Settings → Integrations** in the CodeQR dashboard. Connecting CodeQR to another app replaces the earlier authorization, so reconnect here if you use several.
 
-- **Claude Code** — Full plugin support with MCP server
-- **VS Code Copilot** — Via Agent Skills
-- **OpenAI Codex** — Via Agent Skills
-- **Cursor** — Via Agent Skills
+## Data
 
-## API Resources
+- When Claude calls a CodeQR tool, the arguments it chose go to `mcp.codeqr.io`, which calls the CodeQR API (`api.codeqr.io`) with your workspace's OAuth token. These are what the code or link is made of: destination URLs, QR code content such as Wi-Fi credentials or contact details, link settings, tag names and analytics filters.
+- CodeQR stores the links, QR codes and tags you create in your workspace, and records each scan and click (time, country, city, device, browser, referrer) for your analytics.
+- The MCP server keeps operational logs of which tool ran, whether it succeeded and how long it took. It does not log argument values.
+- The plugin itself is Markdown and JSON. It runs no code on your machine and stores nothing locally.
 
-The CodeQR API provides:
+Privacy policy: [codeqr.io/en/privacy](https://codeqr.io/en/privacy). Terms: [codeqr.io/en/terms](https://codeqr.io/en/terms).
 
-- **Links** — Create, update, list, delete, and bulk create short links
-- **QR Codes** — Create, update, list, delete, and bulk create QR codes
-- **Analytics** — Click analytics with grouping by country, device, browser, OS, referrer
-- **Events** — Event log for your workspace
-- **Domains** — Custom domain management
-- **Tags** — Link organization with tags
-- **Track** — Lead and sale conversion tracking
-- **Projects** — Workspace project management
+## Documentation and support
 
-## Development
+- MCP server and tool reference: [docs.codeqr.io/mcp/introduction](https://docs.codeqr.io/mcp/introduction)
+- Help center: [codeqr.io/en/help](https://codeqr.io/en/help)
+- Support: contact@codeqr.io
+
+## Develop
 
 ```bash
-# Test the plugin locally
+claude plugin validate ./codeqr-plugin
 claude --plugin-dir ./codeqr-plugin
-
-# Reload after changes
-/reload-plugins
 ```
 
 ## License
 
-MIT - [CodeQR](https://codeqr.io)
+MIT. See [LICENSE](LICENSE).
