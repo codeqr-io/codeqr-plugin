@@ -1,11 +1,8 @@
 {
   "mcpServers": {
     "codeqr": {
-      "command": "npx",
-      "args": ["-y", "@codeqr/ts-mcp@latest"],
-      "env": {
-        "CODEQR_API_KEY": ""
-      }
+      "type": "http",
+      "url": "https://mcp.codeqr.io/mcp"
     }
   }
 }
